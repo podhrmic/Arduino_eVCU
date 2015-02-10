@@ -29,6 +29,7 @@
 
 #include "DeviceGEVCU.h"
 #include "DeviceBMS.h"
+#include "ichip_2128.h"
 #include "config.h"
 
 
@@ -67,11 +68,5 @@ void sensors_input_timer(void);
 void systime_timer(void);
 void datalog_timer(void);
 
-/*
- * Device GEVCU
- *
- */
-DeviceGEVCU* device;
-DeviceBMS* bms;
 
 #endif /* MAIN_H */

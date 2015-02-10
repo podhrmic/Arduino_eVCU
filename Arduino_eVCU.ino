@@ -30,7 +30,13 @@ inline void pin_toggle(int pin) {
 #define LED_OFF(_x) PIN_OFF(_x)
 #define LED_TOGGLE(_x) PIN_TOGGLE(_x)
 
-
+/*
+ * Device GEVCU
+ *
+ */
+DeviceGEVCU* device;
+DeviceBMS* bms;
+ICHIPWIFI * ichip;
 
 
 
@@ -124,10 +130,10 @@ void initWiReach()
 	sendWiReach("AT+iWPWD=secret");//Password for our website
 	sendWiReach("AT+iWST0=0");//Connection security wap/wep/wap2 to no security
 	sendWiReach("AT+iWLCH=4");  //Wireless channel
-	sendWiReach("AT+iWLSI=!EVCU");//SSID
+	sendWiReach("AT+iWLSI=VMS_EVCU");//SSID
 	sendWiReach("AT+iWSEC=1");//IF security is used, set for WPA2-AES
 	sendWiReach("AT+iSTAP=1");//Act as AP
-	sendWiReach("AT+iDIP=192.168.2.10");//default ip - must be 10.x.x.x
+	sendWiReach("AT+iDIP=192.168.3.10");//default ip - must be 10.x.x.x
 	sendWiReach("AT+iDPSZ=8");//DHCP pool size
 	sendWiReach("AT+iAWS=1");//Website on
 	sendWiReach("AT+iDOWN");//Powercycle reset
@@ -172,6 +178,7 @@ void setup() {
 	// Instantiate device
 	device = new DeviceGEVCU();
 	bms = new DeviceBMS();
+	ichip = new ICHIPWIFI();
 
 	/*
 	 * Attach timers.
@@ -220,6 +227,7 @@ void loop() {
 	// can event
 	device->process();
 	bms->process();
+	//ichip->loop();
 
 	// datalink event (telemetry command - probably wifi)
 
@@ -248,11 +256,13 @@ inline void handle_periodic_tasks(void){
 		device->setMinCellTemp(bms->getMinCellTemp());
 		device->setMaxCellVolt(bms->getMaxCellVolt());
 		device->setMinCellVolt(bms->getMinCellVolt());
-		device->console_periodic();
+		//device->console_periodic();
 		flag_console = 0;
+		
 	}
 	if (flag_telemetry) {
 		//telemetry_periodic();
+		ichip->handleTick();
 		flag_telemetry = 0;
 	}
 	// start failsafe checks only after T_MIN secs
