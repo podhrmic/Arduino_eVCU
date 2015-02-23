@@ -93,8 +93,8 @@ namespace Constants {
 	static const char* tempSystem = "tempSystem";
 	static const char* mechPower = "mechPower";
 	static const char* prechargeR = "prechargeR";
-        static const char* prechargeRelay = "prechargeRelay";
-        static const char* mainContactorRelay = "mainContactorRelay";
+    static const char* prechargeRelay = "prechargeRelay";
+    static const char* mainContactorRelay = "mainContactorRelay";
 	static const char* coolFan = "coolFan";
 	static const char* coolOn = "coolOn";
 	static const char* coolOff = "coolOff";

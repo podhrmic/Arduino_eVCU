@@ -20,6 +20,7 @@ DeviceBMS::DeviceBMS() {
 void DeviceBMS::can_init_rlecs() {
     // MLEC setup
     status = MLECUninit;
+	//status = MLECRunning;
     memset(rlecs, 0, sizeof(rlecs));
     rlec_idx = 0;
     rlec_txoffset = 0x40;
@@ -37,14 +38,16 @@ void DeviceBMS::can_init_rlecs() {
  void DeviceBMS::can_periodic(){
     switch(status){
         case MLECUninit:
+        SerialUSB.print("MLEC Uninit \r\n");
             if (mlec_broadcast() && mlec_send_request()) {
+              SerialUSB.print("Request sent");
                 request_sent = 1;
                 status = MLECInit;
             }
             break;
         case MLECInit:
-        	//SerialUSB.print("Scanned RLEC: " + String(rlec_idx) + "\r\n");
-        	//SerialUSB.print("Found: " + String(rlecsX[rlec_idx].status) + "\r\n");
+        	SerialUSB.print("Scanned RLEC: " + String(rlec_idx) + "\r\n");
+        	SerialUSB.print("Found: " + String(rlecsX[rlec_idx].status) + "\r\n");
 
             if (rlec_idx < (NUM_RLECS-1)) {
                 // Scanning
@@ -74,7 +77,7 @@ void DeviceBMS::can_init_rlecs() {
                 mlec_send_request();
 
                 //Telemetry (OPTIONAL)
-    			//send_rlec_info(&(rlecsX[rlec_idx]));
+    		send_rlec_info(&(rlecsX[rlec_idx]));
             }
             //set messages to default
             mlec_init_msgs();

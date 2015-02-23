@@ -224,10 +224,9 @@ void setup() {
  * Main loop, equivalent of while(1) {...}
  */
 void loop() {
-	// can event
+	// can eventichip
 	device->process();
 	bms->process();
-	//ichip->loop();
 
 	// datalink event (telemetry command - probably wifi)
 
@@ -257,19 +256,21 @@ inline void handle_periodic_tasks(void){
 		device->setMaxCellVolt(bms->getMaxCellVolt());
 		device->setMinCellVolt(bms->getMinCellVolt());
 		//device->console_periodic();
+		ichip->handleTick();
 		flag_console = 0;
 		
 	}
 	if (flag_telemetry) {
 		//telemetry_periodic();
-		ichip->handleTick();
+        device->console_periodic();
 		flag_telemetry = 0;
 	}
 	// start failsafe checks only after T_MIN secs
 	// so BMS have time to get CAN responses
 	if (flag_failsafe ) {
-		//if (flag_failsafe && (bms.up_time > T_MIN)) {
+		if (flag_failsafe && (device->sys_time > T_MIN)) {
 		failsafe_periodic();
+		}
 		flag_failsafe = 0;
 	}
 	if (flag_bms_can) {

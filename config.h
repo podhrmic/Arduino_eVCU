@@ -33,7 +33,7 @@
 #define RLEC_CELL_1_VOLTAGE_FAULT 0x80 // critical
 
 // Startup time for failsafe
-#define T_MIN 100 // s*10
+#define T_MIN 1000 // s*10
 
 /*
  * Digital outputs

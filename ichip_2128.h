@@ -76,7 +76,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define ICHIP_2128_H_
 
 #include <Arduino.h>
-//#include "config.h"
+#include "config.h"
 #include "main.h"
 #include "constants.h"
 
@@ -91,15 +91,9 @@ struct ParamCache {
 	int16_t torqueActual;
 	int16_t throttle;
 	int16_t brake;
-	bool brakeNotAvailable;
-	int16_t speedRequested;
 	int16_t speedActual;
-	//MotorController::PowerMode powerMode;
 	int16_t dcVoltage;
 	int16_t dcCurrent;
-	int16_t acCurrent;
-	int16_t nominalVolt;
-	int16_t kiloWattHours;
 	uint32_t bitfield1;
 	uint32_t bitfield2;
 	uint32_t bitfield3;
@@ -107,78 +101,31 @@ struct ParamCache {
 	bool running;
 	bool faulted;
 	bool warning;
-	//MotorController::Gears gear;
 	int16_t tempMotor;
 	int16_t tempInverter;
-	int16_t tempSystem;
-	int16_t mechPower;
-    int16_t prechargeR;
-    int8_t prechargeRelay;
-    int8_t mainContactorRelay;
-    int8_t coolFan;
-    int8_t coolOn;
-    int8_t coolOff;
-    int8_t brakeLight;
-    int8_t revLight;
-    int8_t enableIn;
-    int8_t reverseIn;
+
 };
 
-enum SystemMessage {
-	MSG_STARTUP = 0x3000,
-	MSG_SOFT_FAULT = 0x3100,
-	MSG_HARD_FAULT = 0x3150,
-	MSG_DISABLE = 0x3200,
-	MSG_ENABLE = 0x3300,
-	MSG_SET_PARAM = 0x4000,
-	MSG_CONFIG_CHANGE = 0x4001,
-	MSG_COMMAND = 0x4002
-};
 
 struct SendBuff {
 	String cmd;
-	ICHIP_COMM_STATE state;
 };
 
 class ICHIPWIFI  {
     public:
 
     ICHIPWIFI();
-    ICHIPWIFI(USARTClass *which);
+
     void setup(); //initialization on start up
     void handleTick(); //periodic processes
-    void handleMessage(uint32_t messageType, void* message);
-	//DeviceType getType();
-    //DeviceId getId();
-    void loop();
     char *getTimeRunning();
-
-
-	void loadConfiguration();
-	void saveConfiguration();
-    void loadParameters();
-
+    void updateParamCache(); // convert data to iChip friendly format
 
     private:
-	//ELM327Processor *elmProc;
     USARTClass* serialInterface; //Allows for retargetting which serial port we use
-    char incomingBuffer[128]; //storage for one incoming line
-    int ibWritePtr; //write position into above buffer
-	SendBuff sendingBuffer[64];
-	int psWritePtr;
-	int psReadPtr;
 	int tickCounter;
-	int currReply;
 	char buffer[30]; // a buffer for various string conversions
 	ParamCache paramCache;
-	ICHIP_COMM_STATE state;
-	bool didParamLoad;
-	bool didTCPListener;
-	int listeningSocket;
-	int activeSockets[4]; //support for four sockets. Lowest byte is socket #, next byte is size of data waiting in that socket
-	uint32_t lastSentTime;
-	String lastSentCmd;
-	ICHIP_COMM_STATE lastSentState;
 
     void getNextParam(); //get next changed parameter
     void getParamById(String paramName); //try to retrieve the value of the given parameter
@@ -192,8 +139,5 @@ class ICHIPWIFI  {
     void sendCmd(String cmd);
 	void sendCmd(String cmd, ICHIP_COMM_STATE cmdstate);
 	void sendToSocket(int socket, String data);
-    void processParameterChange(char *response);
-
-
 };
 #endif /* ICHIP_2128_H_ */

@@ -68,5 +68,12 @@ void sensors_input_timer(void);
 void systime_timer(void);
 void datalog_timer(void);
 
+/*
+ * Device GEVCU
+ *
+ */
+extern DeviceGEVCU* device;
+extern DeviceBMS* bms;
+
 
 #endif /* MAIN_H */

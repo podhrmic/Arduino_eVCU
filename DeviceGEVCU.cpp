@@ -12,6 +12,99 @@ DeviceGEVCU::DeviceGEVCU() {
 	sys_time = 0;
 	bus = &CAN;//because we want CAN0 now
     timer = 0;
+	phase_temp[0] = 0;//3x i
+	phase_temp[1] = 0;
+	phase_temp[2] = 0;
+	gate_temp = 0;// i
+	board_temp = 0;// i
+	rtd_temp[0] = 0;// 5x i
+	rtd_temp[1] = 0;// 5x i
+	rtd_temp[2] = 0;// 5x i
+	rtd_temp[3] = 0;// 5x i
+	rtd_temp[4] = 0;// 5x i
+	motor_temp = 0;// i
+
+	// Torque
+	torque_shud = 0;// i
+	torque_cmd = 0;// i
+	torque_fb = 0;// i
+
+	// Analog inputs
+	analog_in[0] = 0;//4x i
+	analog_in[1] = 0;//4x i
+	analog_in[2] = 0;//4x i
+	analog_in[3] = 0;//4x i
+
+	// Digital inputs
+	digital_in[0] = 0;//6x u
+	digital_in[1] = 0;//6x u
+	digital_in[2] = 0;//6x u
+	digital_in[3] = 0;//6x u
+	digital_in[4] = 0;//6x u
+	digital_in[5] = 0;//6x u
+
+	// Motor info
+	motor_angle = 0; //i
+	motor_speed = 0;// i
+	inv_freq = 0;// i
+	resolver_angle = 0;// i
+
+	// Current
+	phase_current[0] = 0; // Phase A, B, C 3xi
+	phase_current[1] = 0; // Phase A, B, C 3xi
+	phase_current[2] = 0; // Phase A, B, C 3xi
+	dc_current = 0;// i
+
+	// Voltage
+	dc_voltage = 0;// i
+	output_volt = 0;// i
+	p_ab_volt = 0;// i
+	p_bc_volt = 0;// i
+
+	// Flux
+	flux_cmd = 0;//i
+	flux_fb = 0;// i
+	id_fb = 0;// i
+	iq_fb = 0;// i
+	id_cmd = 0;// i
+	iq_cmd = 0;// i
+
+	// Internal Voltages
+	ref_1_5 = 0;// i
+	ref_2_5 = 0;// i
+	ref_5_0 = 0;// i
+	sys_12v = 0;// i
+
+	// Internal State
+	enum VSMstate vsm_state = VSM_start;// u
+	enum InverterState inv_state = Inv_power_on;// u
+	relay_state = 0;// u
+	enum InvRunMode inv_mode = InvRun_Torque_Mode;// u
+	enum InvCmdMode inv_cmd = InvCmd_CAN;// u
+	inv_enable = 0;// u
+	motor_direction = 0;// u
+	faults[0] = 0;// u
+	faults[1] = 0;// u
+	faults[2] = 0;// u
+	faults[3] = 0;// u
+	faults[4] = 0;// u
+	faults[5] = 0;// u
+	faults[6] = 0;// u
+	faults[7] = 0;// u
+
+	// Various
+	modulation_index = 0;// i
+	flux_reg_out = 0;// i
+
+	// Firmware data
+	eeprom_version = 0;
+	sw_version = 0;
+
+	// Cell data
+	max_cell_temp = 0;
+	min_cell_temp = 0;
+	max_cell_volt = 0;
+	min_cell_volt = 0;
 }
 
 void DeviceGEVCU::console_periodic(){
@@ -63,13 +156,15 @@ void DeviceGEVCU::console_periodic(){
   			 faults[0],faults[1],faults[2],faults[3],faults[4],faults[5],faults[6],faults[7],
   			 modulation_index, flux_reg_out,
 			 min_cell_temp, max_cell_temp, min_cell_volt, max_cell_volt);
-	SerialUSB.print(buffer);
+	//SerialUSB.print(buffer);
 
-	/*
+
 	SerialUSB.print("Up time: " + String(((float)sys_time)/100) + "\r\n");
     SerialUSB.print("Timer: " + String(timer*0.003) + "\r\n");
     SerialUSB.print("max_cell_temp: " + String(max_cell_temp) + "\r\n");
-    */
+    SerialUSB.print("vsm_state: " + String(vsm_state) + "\r\n");
+    SerialUSB.print("sys_12v: " + String(sys_12v) + "\r\n");
+
 
 }
 
