@@ -6,6 +6,7 @@
 #include "main.h"
 
 
+
 /*
  * PIN macros
  */
@@ -114,12 +115,18 @@ void sendWiReach(char* message)
 {
 	Serial2.println(message);
 	delay(700);
-	while (Serial2.available()) {SerialUSB.write(Serial2.read());}
+	while (Serial2.available()) {
+#if PRINT_DEBUG
+		SerialUSB.write(Serial2.read());
+#endif
+	}
 }
 
 void initWiReach()
 {
+#if PRINT_DEBUG
 	SerialUSB.begin(115200); // use SerialUSB only as the programming port doesn't work
+#endif
 	Serial2.begin(115200); // use Serial3 for GEVCU2, use Serial2 for GEVCU3+4
 
 	sendWiReach("AT+iFD");//Host connection set to serial port
@@ -138,7 +145,9 @@ void initWiReach()
 	sendWiReach("AT+iAWS=1");//Website on
 	sendWiReach("AT+iDOWN");//Powercycle reset
 	delay(5000);
+#if PRINT_DEBUG
 	SerialUSB.println("WiReach Wireless Module Initialized....");
+#endif
 }
 
 /**
@@ -147,19 +156,52 @@ void initWiReach()
 void setup() {
 	//
 	//wifi init
+#if USE_WIFI
 	initWiReach();
-
-
+#endif
 
 	// initialize pins
-	pinMode(FW_ENABLE_PIN, OUTPUT);
-	pinMode(HLIM_PIN, OUTPUT);
-	pinMode(LLIM_PIN, OUTPUT);
-	pinMode(SYSLED_PIN, OUTPUT);
-	pinMode(BATLOW_PIN, OUTPUT);
-	pinMode(BATVERYLOW_PIN, OUTPUT);
-	pinMode(BATCRITICAL_PIN, OUTPUT);
+	// DOUT0 - no RTDS
+	//pinMode(THROTTLE_OUT, OUTPUT);
+	//PIN_OFF(THROTTLE_OUT);
 
+	// DOUT1 - no throttle
+	pinMode(RTDS_PIN, OUTPUT);
+	PIN_OFF(RTDS_PIN);
+
+	// DOUT2 - AMS ERR ON 
+	pinMode(AMS_LED, OUTPUT);
+	PIN_ON(AMS_LED);
+
+	// DOUT3 - FW_ENABLE OFF 
+	pinMode(FW_ENABLE, OUTPUT);
+	PIN_OFF(FW_ENABLE);
+
+	// DOUT4 - SHUTDOWN OPEN (OFF)
+	pinMode(SHUTDOWN, OUTPUT);
+	PIN_OFF(SHUTDOWN);
+
+	// DOUT6 - DC_ENABLE OFF
+	//pinMode(DC_ENABLE, OUTPUT);
+	//PIN_OFF(DC_ENABLE);
+
+	// DOUT7 - IMD_LED
+	pinMode(IMD_LED, OUTPUT);
+	PIN_ON(IMD_LED);
+
+	// BRAKE_EN
+	pinMode(BRAKE_EN, INPUT);
+
+	//IMD_STATUS
+	pinMode(IMD_STATUS, INPUT);
+
+	//pinMode(FW_ENABLE_PIN, OUTPUT);
+	//pinMode(HLIM_PIN, OUTPUT);
+	//pinMode(LLIM_PIN, OUTPUT);
+	//pinMode(SYSLED_PIN, OUTPUT);
+	//pinMode(BATLOW_PIN, OUTPUT);
+	//pinMode(BATVERYLOW_PIN, OUTPUT);
+	//pinMode(BATCRITICAL_PIN, OUTPUT);
 
 
 	//setup ports
@@ -173,7 +215,7 @@ void setup() {
 	Can0.setRXFilter(0, 0, 0, false);
 	Can1.setRXFilter(0, 0, 0, false);
 
-	SerialUSB.begin(921600); // use SerialUSB only as the programming port doesn't work
+	//SerialUSB.begin(921600); // use SerialUSB only as the programming port doesn't work
 
 	// Instantiate device
 	device = new DeviceGEVCU();
@@ -258,18 +300,18 @@ inline void handle_periodic_tasks(void){
 		//device->console_periodic();
 		ichip->handleTick();
 		flag_console = 0;
-		
+
 	}
 	if (flag_telemetry) {
 		//telemetry_periodic();
-        device->console_periodic();
+		device->console_periodic();
 		flag_telemetry = 0;
 	}
 	// start failsafe checks only after T_MIN secs
 	// so BMS have time to get CAN responses
 	if (flag_failsafe ) {
 		if (flag_failsafe && (device->sys_time > T_MIN)) {
-		failsafe_periodic();
+			failsafe_periodic();
 		}
 		flag_failsafe = 0;
 	}
@@ -299,74 +341,74 @@ inline void handle_periodic_tasks(void){
  *
  */
 inline void failsafe_periodic(void) {
-     // check rlecs for faults
-     for (int i=0;i<NUM_RLECS;i++){
-        if (bms->rlecsX[i].status == Active) {
-            // critical faults
-            if ((bms->rlecsX[i].faults & RLEC_CELL_1_AD_FAULT) != 0) {
-                //debuglink.printf("!RLEC_CELL_1_AD_FAULT - shutting down...\r\n");  
-                failsafe_shutdown();
-            }
-            else if ((bms->rlecsX[i].faults & RLEC_CELL_VOLTAGE_CONNECTION_FAULT) != 0) {
-                //debuglink.printf("!RLEC_CELL_VOLTAGE_CONNECTION_FAULT - shutting down...\r\n");  
-                failsafe_shutdown();
-            }
-            else if ((bms->rlecsX[i].faults & RLEC_CELL_VOLTAGE_AD_FAULT) != 0) {
-                //debuglink.printf("!RLEC_CELL_VOLTAGE_AD_FAULT - shutting down...\r\n");  
-                failsafe_shutdown();
-            }
-            else if ((bms->rlecsX[i].faults & RLEC_MODULE_VOLTAGE_AD_FAULT) != 0) {
-                //debuglink.printf("!RLEC_MODULE_VOLTAGE_AD_FAULT - shutting down...\r\n");  
-                failsafe_shutdown();
-            }
-            else if ((bms->rlecsX[i].faults & RLEC_CELL_1_VOLTAGE_FAULT) != 0) {
-                //debuglink.printf("!RLEC_CELL_1_VOLTAGE_FAULT - shutting down...\r\n");  
-                failsafe_shutdown();
-            }
-            
-            // warnings
-            else if ((bms->rlecsX[i].faults & RLEC_CELL_TEMP_AD_FAULT) != 0) {
-                //debuglink.printf("!RLEC_CELL_TEMP_AD_FAULT - warning light on.\r\n");  
-                failsafe_warning();
-            }
-            else if ((bms->rlecsX[i].faults & RLEC_RLEC_TEMP_AD_FAULT) != 0) {
-                //debuglink.printf("!RLEC_RLEC_TEMP_AD_FAULT - warning light on.\r\n");  
-                failsafe_warning();
-            }
-            
-            // Charging - overcharge protection
-            if (bms->rlecsX[i].max_cell_volt > MAX_CELL_VOLT) {
-                charger_shutdown();
-                //debuglink.printf("Charging Stopped.\r\n");  
-            }
-            
-            // Voltage limits
-            // warning if minimal allowed voltage reached
-            if (bms->rlecsX[i].min_cell_volt < MIN_CELL_VOLT) {
-                batcritical_warning();
-            	failsafe_shutdown();
-                //debuglink.printf("Minimal voltage reached - shutting down.\r\n");
-                //debuglink.printf("RLEC %i\r\n",i);
-                //debuglink.printf("Min voltage: %f\r\n",(float)bms->rlecsX[i].min_cell_volt*0.00244);
-            }
-            // warning if cell below low threshold
-            else if (bms->rlecsX[i].min_cell_volt < BAT_LOW) {
-                batlow_warning();
-                //debuglink.printf("Warning - low voltage.\r\n"); 
-            }
-            // warning if cell below very low threshold
-            else if (bms->rlecsX[i].min_cell_volt < BAT_VERY_LOW) {
-                batverylow_warning();
-                //debuglink.printf("Warning - very low voltage.\r\n"); 
-            }
+	// check rlecs for faults
+	for (int i=0;i<NUM_RLECS;i++){
+		if (bms->rlecsX[i].status == Active) {
+			// critical faults
+			if ((bms->rlecsX[i].faults & RLEC_CELL_1_AD_FAULT) != 0) {
+				//debuglink.printf("!RLEC_CELL_1_AD_FAULT - shutting down...\r\n");  
+				failsafe_shutdown();
+			}
+			else if ((bms->rlecsX[i].faults & RLEC_CELL_VOLTAGE_CONNECTION_FAULT) != 0) {
+				//debuglink.printf("!RLEC_CELL_VOLTAGE_CONNECTION_FAULT - shutting down...\r\n");  
+				failsafe_shutdown();
+			}
+			else if ((bms->rlecsX[i].faults & RLEC_CELL_VOLTAGE_AD_FAULT) != 0) {
+				//debuglink.printf("!RLEC_CELL_VOLTAGE_AD_FAULT - shutting down...\r\n");  
+				failsafe_shutdown();
+			}
+			else if ((bms->rlecsX[i].faults & RLEC_MODULE_VOLTAGE_AD_FAULT) != 0) {
+				//debuglink.printf("!RLEC_MODULE_VOLTAGE_AD_FAULT - shutting down...\r\n");  
+				failsafe_shutdown();
+			}
+			else if ((bms->rlecsX[i].faults & RLEC_CELL_1_VOLTAGE_FAULT) != 0) {
+				//debuglink.printf("!RLEC_CELL_1_VOLTAGE_FAULT - shutting down...\r\n");  
+				failsafe_shutdown();
+			}
 
-            //Temperature limits
-            if (bms->rlecsX[i].max_cell_temp > MAX_CELL_TEMP) {
-            	failsafe_shutdown();
-            	//debuglink.printf("Max cell temperature reached- shutting down.\r\n");
-            }
-        }
-    }
+			// warnings
+			else if ((bms->rlecsX[i].faults & RLEC_CELL_TEMP_AD_FAULT) != 0) {
+				//debuglink.printf("!RLEC_CELL_TEMP_AD_FAULT - warning light on.\r\n");  
+				failsafe_warning();
+			}
+			else if ((bms->rlecsX[i].faults & RLEC_RLEC_TEMP_AD_FAULT) != 0) {
+				//debuglink.printf("!RLEC_RLEC_TEMP_AD_FAULT - warning light on.\r\n");  
+				failsafe_warning();
+			}
+
+			// Charging - overcharge protection
+			if (bms->rlecsX[i].max_cell_volt > MAX_CELL_VOLT) {
+				charger_shutdown();
+				//debuglink.printf("Charging Stopped.\r\n");  
+			}
+
+			// Voltage limits
+			// warning if minimal allowed voltage reached
+			if (bms->rlecsX[i].min_cell_volt < MIN_CELL_VOLT) {
+				batcritical_warning();
+				failsafe_shutdown();
+				//debuglink.printf("Minimal voltage reached - shutting down.\r\n");
+				//debuglink.printf("RLEC %i\r\n",i);
+				//debuglink.printf("Min voltage: %f\r\n",(float)bms->rlecsX[i].min_cell_volt*0.00244);
+			}
+			// warning if cell below low threshold
+			else if (bms->rlecsX[i].min_cell_volt < BAT_LOW) {
+				batlow_warning();
+				//debuglink.printf("Warning - low voltage.\r\n"); 
+			}
+			// warning if cell below very low threshold
+			else if (bms->rlecsX[i].min_cell_volt < BAT_VERY_LOW) {
+				batverylow_warning();
+				//debuglink.printf("Warning - very low voltage.\r\n"); 
+			}
+
+			//Temperature limits
+			if (bms->rlecsX[i].max_cell_temp > MAX_CELL_TEMP) {
+				failsafe_shutdown();
+				//debuglink.printf("Max cell temperature reached- shutting down.\r\n");
+			}
+		}
+	}
 }
 
 /*
@@ -374,7 +416,7 @@ inline void failsafe_periodic(void) {
  * HLIM: 1=ON, 0=OFF
  */
 inline void charger_shutdown( void ) {
-    PIN_OFF(HLIM_PIN);
+	PIN_OFF(HLIM_PIN);
 }
 
 /*
@@ -382,9 +424,9 @@ inline void charger_shutdown( void ) {
  * LLIM: 1=ON, 0 = FF
  */
 inline void failsafe_shutdown( void ) {
-    PIN_OFF(FW_ENABLE_PIN); // disable FW_EN
+	PIN_OFF(FW_ENABLE_PIN); // disable FW_EN
 
-    delay(500); // give some time to remove current from AIRs
+	delay(500); // give some time to remove current from AIRs
 
 	PIN_OFF(LLIM_PIN); // disable AIR
 
@@ -397,21 +439,21 @@ inline void failsafe_shutdown( void ) {
  * Light up warning light
  */
 inline void failsafe_warning( void ) {
-    LED_ON(WARNING_LIGHT_PIN);
+	LED_ON(WARNING_LIGHT_PIN);
 }
 
 /*
  * Light up BatLow
  */
 inline void batlow_warning( void ) {
-    LED_ON(BATLOW_PIN);
+	LED_ON(BATLOW_PIN);
 }
 
 /*
  * Light up BatLow & reduce throttle
  */
 inline void batverylow_warning( void ) {
-    LED_ON(BATVERYLOW_PIN);
+	LED_ON(BATVERYLOW_PIN);
 }
 
 /*
@@ -422,5 +464,5 @@ inline void batcritical_warning( void ) {
 
 	delay(500); // give some time to remove current from AIRs
 
-    failsafe_shutdown(); // open shutdown circuit
+	failsafe_shutdown(); // open shutdown circuit
 }

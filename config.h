@@ -8,6 +8,11 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+// Some defines for the compilation
+#define USE_WIFI 0
+#define PRINT_DEBUG 1
+#define PRINT_DATA 0
+
 // Voltage defines
 #define MAX_CELL_VOLT (4.2/RLEC_CAN_VOLTAGE_MULT)
 #define MIN_CELL_VOLT (2.5/RLEC_CAN_VOLTAGE_MULT)
@@ -38,15 +43,32 @@
 /*
  * Digital outputs
  */
-#define FW_ENABLE_PIN 4 // DOUT0
-#define HLIM_PIN 5 // DOUT1
-#define LLIM_PIN 6 // DOUT2
-//#define SYSLED_PIN 7 // DOUT3
-#define SYSLED_PIN 13 // LED "L"
-#define BATLOW_PIN 2 // DOUT4
-#define BATVERYLOW_PIN 3 // DOUT5
-#define BATCRITICAL_PIN 8 // DOUT6
-#define WARNING_LIGHT_PIN 9 // DOUT7
+// #define THROTTLE_OUT 4// DOUT0 - we are not using throttle output at the moment
+#define RTDS_PIN 5 // DOUT1 
+#define AMS_LED 6 // DOUT2
+#define FW_ENABLE 7 // DOUT3
+#define SHUTDOWN 2 // DOUT4
+// #define DC_ENABLE 8 // DOUT6, PC22 - we are not using DC enable (always on)
+#define IMD_LED 9 // DOUT7, PC21
+
+#define THROTTLE_IN_1 57 // PA22, Analog 3, AIN0
+#define THROTTLE_IN_2 56 // PA23, Analog 2, AIN1
+#define BATT_SENSE 55 // PA24, Analog 1, AIN2
+
+#define BRAKE_EN 49 // PC14, Digital Pin 49, DIN1
+#define IMD_STATUS 50 // PC13, DIN2
+
+// dummies
+/*
+#define FW_ENABLE_PIN 7 // DOUT0
+#define HLIM_PIN 7 // DOUT1
+#define LLIM_PIN 7 // DOUT2
+#define SYSLED_PIN 7 // LED "L"
+#define BATLOW_PIN 7 // DOUT4
+#define BATVERYLOW_PIN 7 // DOUT5
+#define BATCRITICAL_PIN 7 // DOUT6
+#define WARNING_LIGHT_PIN 7 // DOUT7
+*/
 
 
 /*

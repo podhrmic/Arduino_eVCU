@@ -156,15 +156,17 @@ void DeviceGEVCU::console_periodic(){
   			 faults[0],faults[1],faults[2],faults[3],faults[4],faults[5],faults[6],faults[7],
   			 modulation_index, flux_reg_out,
 			 min_cell_temp, max_cell_temp, min_cell_volt, max_cell_volt);
-	//SerialUSB.print(buffer);
+#if PRINT_DATA
+	SerialUSB.print(buffer);
+#endif
 
-
+#if PRINT_DEBUG
 	SerialUSB.print("Up time: " + String(((float)sys_time)/100) + "\r\n");
     SerialUSB.print("Timer: " + String(timer*0.003) + "\r\n");
     SerialUSB.print("max_cell_temp: " + String(max_cell_temp) + "\r\n");
     SerialUSB.print("vsm_state: " + String(vsm_state) + "\r\n");
     SerialUSB.print("sys_12v: " + String(sys_12v) + "\r\n");
-
+#endif
 
 }
 
