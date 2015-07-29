@@ -39,7 +39,7 @@ inline void handle_periodic_tasks( void );
 inline void failsafe_periodic( void );
 inline void failsafe_shutdown( void );
 inline void failsafe_warning( void );
-inline void datalog_periodic(void);
+//inline void datalog_periodic(void); - not using it now
 
 inline void charger_shutdown( void );
 inline void batlow_warning( void );

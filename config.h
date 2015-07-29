@@ -10,8 +10,8 @@
 
 // Some defines for the compilation
 #define USE_WIFI 0
-#define PRINT_DEBUG 1
-#define PRINT_DATA 0
+#define PRINT_DEBUG 0
+#define PRINT_DATA 1
 
 // Voltage defines
 #define MAX_CELL_VOLT (4.2/RLEC_CAN_VOLTAGE_MULT)
@@ -58,18 +58,8 @@
 #define BRAKE_EN 49 // PC14, Digital Pin 49, DIN1
 #define IMD_STATUS 50 // PC13, DIN2
 
-// dummies
-/*
-#define FW_ENABLE_PIN 7 // DOUT0
-#define HLIM_PIN 7 // DOUT1
-#define LLIM_PIN 7 // DOUT2
-#define SYSLED_PIN 7 // LED "L"
-#define BATLOW_PIN 7 // DOUT4
-#define BATVERYLOW_PIN 7 // DOUT5
-#define BATCRITICAL_PIN 7 // DOUT6
-#define WARNING_LIGHT_PIN 7 // DOUT7
-*/
-
+// Legacy defines
+#define HLIM_PIN SHUTDOWN
 
 /*
  * Frequency defines [Hz]

@@ -65,6 +65,7 @@ public:
 	void process();
 	void handleCanFrame(CAN_FRAME *frame);
 	void console_periodic();
+	uint16_t calculate_checksum(uint8_t* data, uint16_t data_len);
 
 
 	void setMaxCellTemp(int8_t maxCellTemp) {
@@ -82,6 +83,8 @@ public:
 	void setMinCellVolt(uint16_t minCellVolt) {
 		min_cell_volt = minCellVolt;
 	}
+
+
 
 	CANRaw *bus;	// the can bus instance which this CanHandler instance is assigned to
 
@@ -162,6 +165,8 @@ public:
 	int8_t min_cell_temp;
 	uint16_t max_cell_volt;
 	uint16_t min_cell_volt;
+
+	enum VSMstate last_state;
 private:
 	CAN_FRAME tx_frame; // the request frame sent to the car
 	CAN_FRAME rx_frame; // received frame

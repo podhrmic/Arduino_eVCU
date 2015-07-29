@@ -77,6 +77,7 @@ DeviceGEVCU::DeviceGEVCU() {
 
 	// Internal State
 	enum VSMstate vsm_state = VSM_start;// u
+	enum VSMstate last_state = vsm_state;
 	enum InverterState inv_state = Inv_power_on;// u
 	relay_state = 0;// u
 	enum InvRunMode inv_mode = InvRun_Torque_Mode;// u
@@ -107,11 +108,31 @@ DeviceGEVCU::DeviceGEVCU() {
 	min_cell_volt = 0;
 }
 
+/**
+ * Calculate checksum per Xgear documentation
+ * @param data
+ * @param data_len
+ * @return
+ */
+uint16_t DeviceGEVCU::calculate_checksum(uint8_t* data, uint16_t data_len)
+{
+  uint8_t byte1 = 0;
+  uint8_t byte2 = 0;
+  for(int x=0; x<data_len; ++x)
+  {
+    byte1 += data[x];
+    byte2 += byte1;
+  }
+  return (byte1<<8)+byte2;
+}
+
+
 void DeviceGEVCU::console_periodic(){
-	
+    float f_timer = (float)timer*0.003;
+    float f_sys_time = (float)sys_time/100;
+
+#ifdef PRINT_STRING
 	char buffer[1024];
-        float f_timer = (float)timer*0.003;
-        float f_sys_time = (float)sys_time/100;
 	sprintf(buffer, "%f, %f,"
   			 // phase temp
   			 "%i, %i, %i,"
@@ -156,8 +177,221 @@ void DeviceGEVCU::console_periodic(){
   			 faults[0],faults[1],faults[2],faults[3],faults[4],faults[5],faults[6],faults[7],
   			 modulation_index, flux_reg_out,
 			 min_cell_temp, max_cell_temp, min_cell_volt, max_cell_volt);
+#else /* PRINT_BINARY */
+	uint8_t buf[1024];
+
+	// header
+	buf[0] = 0xBE;
+	buf[1] = 0xEF;
+
+	uint16_t idx = 2;
+
+	uint16_t payload_lenght = 119;
+	uint16_t packet_length = 125;
+
+	// datalenght
+	memcpy(&buf[idx], &payload_lenght, sizeof(uint16_t));
+	idx += sizeof(uint16_t);
+
+	// payload
+
+	//f_timer	4	float	4	sec	RMS time
+	memcpy(&buf[idx], &f_timer, sizeof(float));
+	idx += sizeof(float);
+
+	//f_sys_time	4	float	8	sec	system time
+	memcpy(&buf[idx], &f_sys_time, sizeof(float));
+	idx += sizeof(float);
+
+	//phase_temp	6	int16 x3	14
+	memcpy(&buf[idx], &phase_temp, sizeof(int16_t)*3);
+	idx += sizeof(int16_t)*3;
+
+	//gate_temp	2	int16	16
+	memcpy(&buf[idx], &gate_temp, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//board_temp	2	int16	18
+	memcpy(&buf[idx], &board_temp, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//rtd_temp	10	int16 x5	28
+	memcpy(&buf[idx], &rtd_temp, sizeof(int16_t)*5);
+	idx += sizeof(int16_t)*5;
+
+	//motor_temp	2	int16	30
+	memcpy(&buf[idx], &motor_temp, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//torque_shud	2	int16	32
+	memcpy(&buf[idx], &torque_shud, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//torque_cmd	2	int16	34
+	memcpy(&buf[idx], &torque_cmd, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//torque_fb	2	int16	36
+	memcpy(&buf[idx], &torque_fb, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//analog_in	8	int16 x 4	44
+	memcpy(&buf[idx], &analog_in, sizeof(int16_t)*4);
+	idx += sizeof(int16_t)*4;
+
+	//digital_in	6	uint8 x 6	50
+	memcpy(&buf[idx], &digital_in, sizeof(int8_t)*6);
+	idx += sizeof(int8_t)*6;
+
+	//motor_angle	2	int16	52
+	memcpy(&buf[idx], &motor_angle, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//motor_speed	2	int16	54
+	memcpy(&buf[idx], &motor_speed, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//inv_freq	2	int16	56
+	memcpy(&buf[idx], &inv_freq, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//resolver_angle	2	int16	58
+	memcpy(&buf[idx], &resolver_angle, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//phase_current	6	int16 x 3	64
+	memcpy(&buf[idx], &phase_current, sizeof(int16_t)*3);
+	idx += sizeof(int16_t)*3;
+
+	//dc_current	2	int16	66
+	memcpy(&buf[idx], &dc_current, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//dc_voltage	2	int16	68
+	memcpy(&buf[idx], &dc_voltage, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//output_volt	2	int16	70
+	memcpy(&buf[idx], &output_volt, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//p_ab_volt	2	int16	72
+	memcpy(&buf[idx], &p_ab_volt, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//p_bc_volt	2	int16	74
+	memcpy(&buf[idx], &p_bc_volt, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//flux_cmd	2	int16	76
+	memcpy(&buf[idx], &flux_cmd, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//flux_fb	2	int16	78
+	memcpy(&buf[idx], &flux_fb, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//id_fb	2	int16	80
+	memcpy(&buf[idx], &id_fb, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//iq_fb	2	int16	82
+	memcpy(&buf[idx], &iq_fb, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//id_cmd	2	int16	84
+	memcpy(&buf[idx], &id_cmd, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//iq_cmd	2	int16	86
+	memcpy(&buf[idx], &iq_cmd, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//ref_1_5	2	int16	88
+	memcpy(&buf[idx], &ref_1_5, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//ref_2_5	2	int16	90
+	memcpy(&buf[idx], &ref_2_5, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//ref_5_0	2	int16	92
+	memcpy(&buf[idx], &ref_5_0, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//sys_12v	2	int16	94
+	memcpy(&buf[idx], &sys_12v, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//vsm_state	1	uint8	95
+	memcpy(&buf[idx], &vsm_state, sizeof(uint8_t));
+	idx += sizeof(uint8_t);
+
+	//inv_state	1	uint8	96
+	memcpy(&buf[idx], &inv_state, sizeof(uint8_t));
+	idx += sizeof(uint8_t);
+
+	//relay_state	1	uint8	97
+	memcpy(&buf[idx], &relay_state, sizeof(uint8_t));
+	idx += sizeof(uint8_t);
+
+	//inv_mode	1	uint8	98
+	memcpy(&buf[idx], &inv_mode, sizeof(uint8_t));
+	idx += sizeof(uint8_t);
+
+	//inv_cmd	1	uint8	99
+	memcpy(&buf[idx], &inv_cmd, sizeof(uint8_t));
+	idx += sizeof(uint8_t);
+
+	//inv_enable	1	uint8	100
+	memcpy(&buf[idx], &inv_enable, sizeof(uint8_t));
+	idx += sizeof(uint8_t);
+
+	//motor_direction	1	uint8	101
+	memcpy(&buf[idx], &motor_direction, sizeof(uint8_t));
+	idx += sizeof(uint8_t);
+
+	//faults	8	uint8 x 8	109
+	memcpy(&buf[idx], &faults, sizeof(uint8_t)*8);
+	idx += sizeof(uint8_t)*8;
+
+	//modulation_index	2	int16	111
+	memcpy(&buf[idx], &modulation_index, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//flux_reg_out	2	int16	113
+	memcpy(&buf[idx], &flux_reg_out, sizeof(int16_t));
+	idx += sizeof(int16_t);
+
+	//min_cell_temp	1	int8	114
+	memcpy(&buf[idx], &min_cell_temp, sizeof(int8_t));
+	idx += sizeof(int8_t);
+
+	//max_cell_temp	1	int8	115
+	memcpy(&buf[idx], &max_cell_temp, sizeof(int8_t));
+	idx += sizeof(int8_t);
+
+	//min_cell_volt	2	uint16	117
+	memcpy(&buf[idx], &min_cell_volt, sizeof(uint16_t));
+	idx += sizeof(uint16_t);
+
+	//max_cell_volt	2	uint16	119
+	memcpy(&buf[idx], &max_cell_volt, sizeof(uint16_t));
+	idx += sizeof(uint16_t);
+
+	// Payload Checksum
+	static uint16_t  dta_chksum;
+	dta_chksum = calculate_checksum(&buf[4], payload_lenght);
+	memcpy(&buf[idx], &dta_chksum, sizeof(uint16_t));
+	idx += sizeof(uint16_t);
+#endif /* PRINT_STRING */
+
 #if PRINT_DATA
+#ifdef PRINT_STRING
 	SerialUSB.print(buffer);
+#else /* print binary */
+	Serial.write(buf, packet_length);
+#endif /* PRINT_STRING */
 #endif
 
 #if PRINT_DEBUG

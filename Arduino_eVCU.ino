@@ -7,7 +7,7 @@
 
 
 
-/*
+/**
  * PIN macros
  */
 #define PIN_ON(_x) digitalWrite(_x, HIGH)
@@ -24,16 +24,15 @@ inline void pin_toggle(int pin) {
 	}
 }
 
-/*
+/**
  * LED macros
  */
 #define LED_ON(_x) PIN_ON(_x)
 #define LED_OFF(_x) PIN_OFF(_x)
 #define LED_TOGGLE(_x) PIN_TOGGLE(_x)
 
-/*
- * Device GEVCU
- *
+/**
+ * Devices
  */
 DeviceGEVCU* device;
 DeviceBMS* bms;
@@ -41,39 +40,21 @@ ICHIPWIFI * ichip;
 
 
 
-// Timer flags
-//uint8_t flag_heartbeat;
+/**
+ * Timer flags
+ */
 uint8_t flag_console;
 uint8_t flag_telemetry;
 uint8_t flag_failsafe;
 uint8_t flag_bms_can;
 uint8_t flag_rms_can;
 uint8_t flag_sensors_input;
-//uint8_t flag_systime;
 uint8_t flag_datalog;
 
-/*
- * Timer callbacks
- */
 
 /**
- * Heartbeat
- * For now just toggle digital output
- * that can be in interrupt
- * Sysled is always low (because LED goes to GND), so normal digital read won't work
+ * Timer callbacks
  */
-void heartbeat_timer(void){
-	static int state = 0;
-	if (state==0) {
-		digitalWrite(SYSLED_PIN, LOW);
-		state =1;
-	}
-	else {
-		digitalWrite(SYSLED_PIN, HIGH);
-		state=0; 
-	}
-}
-
 void console_timer(void){
 	flag_console = 1;
 }
@@ -98,12 +79,12 @@ void sensors_input_timer(void){
 	flag_sensors_input = 1;
 }
 
+
 /**
  * Systime
  * We are hoping for 10ms resolution
  */
 void systime_timer(void){
-	//flag_systime = 1;
 	device->sys_time++;
 }
 
@@ -111,6 +92,10 @@ void datalog_timer(void){
 	flag_datalog = 1;
 }
 
+
+/**
+ * Wifi stuff
+ */
 void sendWiReach(char* message)
 {
 	Serial2.println(message);
@@ -150,11 +135,11 @@ void initWiReach()
 #endif
 }
 
+
 /**
  * Setup Arduino
  */
 void setup() {
-	//
 	//wifi init
 #if USE_WIFI
 	initWiReach();
@@ -171,15 +156,15 @@ void setup() {
 
 	// DOUT2 - AMS ERR ON 
 	pinMode(AMS_LED, OUTPUT);
-	PIN_ON(AMS_LED);
+	PIN_OFF(AMS_LED);
 
 	// DOUT3 - FW_ENABLE OFF 
 	pinMode(FW_ENABLE, OUTPUT);
-	PIN_OFF(FW_ENABLE);
+	PIN_ON(FW_ENABLE);
 
 	// DOUT4 - SHUTDOWN OPEN (OFF)
 	pinMode(SHUTDOWN, OUTPUT);
-	PIN_OFF(SHUTDOWN);
+	PIN_ON(SHUTDOWN);
 
 	// DOUT6 - DC_ENABLE OFF
 	//pinMode(DC_ENABLE, OUTPUT);
@@ -187,22 +172,13 @@ void setup() {
 
 	// DOUT7 - IMD_LED
 	pinMode(IMD_LED, OUTPUT);
-	PIN_ON(IMD_LED);
+	PIN_OFF(IMD_LED);
 
 	// BRAKE_EN
 	pinMode(BRAKE_EN, INPUT);
 
 	//IMD_STATUS
 	pinMode(IMD_STATUS, INPUT);
-
-	//pinMode(FW_ENABLE_PIN, OUTPUT);
-	//pinMode(HLIM_PIN, OUTPUT);
-	//pinMode(LLIM_PIN, OUTPUT);
-	//pinMode(SYSLED_PIN, OUTPUT);
-	//pinMode(BATLOW_PIN, OUTPUT);
-	//pinMode(BATVERYLOW_PIN, OUTPUT);
-	//pinMode(BATCRITICAL_PIN, OUTPUT);
-
 
 	//setup ports
 	Can0.begin(CAN_BPS_1000K); // RMS can == CAN
@@ -215,24 +191,26 @@ void setup() {
 	Can0.setRXFilter(0, 0, 0, false);
 	Can1.setRXFilter(0, 0, 0, false);
 
-	//SerialUSB.begin(921600); // use SerialUSB only as the programming port doesn't work
+#if PRINT_DATA
+	SerialUSB.begin(921600); // use SerialUSB only as the programming port doesn't work
+#endif
 
 	// Instantiate device
 	device = new DeviceGEVCU();
 	bms = new DeviceBMS();
 	ichip = new ICHIPWIFI();
 
-	/*
+	/**
 	 * Attach timers.
 	 * It is calling for threads...
 	 */
-	// 0. datalog
-	Timer0.attachInterrupt(datalog_timer).setFrequency(DATALOG_FREQUENCY).start();
-	delay(50); // to offset the timer firing a little bit
+	// 0. datalog - not using datalog timer at this point
+	//Timer0.attachInterrupt(datalog_timer).setFrequency(DATALOG_FREQUENCY).start();
+	//delay(50); // to offset the timer firing a little bit
 
 	// 1. heartbeat
-	Timer1.attachInterrupt(heartbeat_timer).setFrequency(HEARTBEAT_FREQUENCY).start();
-	delay(50); // to offset the timer firing a little bit
+	//Timer1.attachInterrupt(heartbeat_timer).setFrequency(HEARTBEAT_FREQUENCY).start();
+	//delay(50); // to offset the timer firing a little bit
 
 	// 2. console (serial over usb)
 	Timer2.attachInterrupt(console_timer).setFrequency(CONSOLE_FREQUENCY).start();
@@ -250,31 +228,28 @@ void setup() {
 	Timer5.attachInterrupt(bms_can_timer).setFrequency(BMS_CAN_FREQUENCY).start();
 	delay(50); // to offset the timer firing a little bit
 
-	// 6. RMS CAN
+	// 6. RMS CAN - we are not sending anything on RMS CAN
 	//Timer6.attachInterrupt(rms_can_timer).setFrequency(RMS_CAN_FREQUENCY).start();
-	delay(50); // to offset the timer firing a little bit
+	//delay(50); // to offset the timer firing a little bit
 
-	// 7. sensor inputs
-	Timer7.attachInterrupt(sensors_input_timer).setFrequency(SENSOR_INPUT_FREQUENCY).start();
-	delay(50); // to offset the timer firing a little bit
+	// 7. sensor inputs - we are not doing this AFAIK
+	//Timer7.attachInterrupt(sensors_input_timer).setFrequency(SENSOR_INPUT_FREQUENCY).start();
+	//delay(50); // to offset the timer firing a little bit
 
 	// 8. system time
 	Timer8.attachInterrupt(systime_timer).setFrequency(SYSTIME_FREQUENCY).start();
+	delay(50); // to offset the timer firing a little bit
 }
 
 /**
  * Main loop, equivalent of while(1) {...}
  */
 void loop() {
-	// can eventichip
+	// Process RMS CAN
 	device->process();
+
+	// Process BMS CAN
 	bms->process();
-
-	// datalink event (telemetry command - probably wifi)
-
-	// console (serial event)
-
-	// probably all?
 
 	// handle periodic tasks based on trigger from timers
 	handle_periodic_tasks();
@@ -341,6 +316,18 @@ inline void handle_periodic_tasks(void){
  *
  */
 inline void failsafe_periodic(void) {
+	// check for RTDS sound
+	static int rtds_cnt;
+	if ((device->vsm_state == VSM_ready) && (device->last_state != VSM_ready)) {
+		rtds_cnt++;
+		if (rtds_cnt > 0) {
+			device->last_state = device->vsm_state;
+		}
+	}
+	else {
+		device->last_state = device->vsm_state;
+	}
+	
 	// check rlecs for faults
 	for (int i=0;i<NUM_RLECS;i++){
 		if (bms->rlecsX[i].status == Active) {
@@ -385,7 +372,7 @@ inline void failsafe_periodic(void) {
 			// Voltage limits
 			// warning if minimal allowed voltage reached
 			if (bms->rlecsX[i].min_cell_volt < MIN_CELL_VOLT) {
-				batcritical_warning();
+				//batcritical_warning();
 				failsafe_shutdown();
 				//debuglink.printf("Minimal voltage reached - shutting down.\r\n");
 				//debuglink.printf("RLEC %i\r\n",i);
@@ -393,12 +380,12 @@ inline void failsafe_periodic(void) {
 			}
 			// warning if cell below low threshold
 			else if (bms->rlecsX[i].min_cell_volt < BAT_LOW) {
-				batlow_warning();
+				//batlow_warning();
 				//debuglink.printf("Warning - low voltage.\r\n"); 
 			}
 			// warning if cell below very low threshold
 			else if (bms->rlecsX[i].min_cell_volt < BAT_VERY_LOW) {
-				batverylow_warning();
+				//batverylow_warning();
 				//debuglink.printf("Warning - very low voltage.\r\n"); 
 			}
 
@@ -416,7 +403,8 @@ inline void failsafe_periodic(void) {
  * HLIM: 1=ON, 0=OFF
  */
 inline void charger_shutdown( void ) {
-	PIN_OFF(HLIM_PIN);
+	//PIN_OFF(SHUTDOWN); // disable AIR
+	failsafe_shutdown();
 }
 
 /*
@@ -424,13 +412,11 @@ inline void charger_shutdown( void ) {
  * LLIM: 1=ON, 0 = FF
  */
 inline void failsafe_shutdown( void ) {
-	PIN_OFF(FW_ENABLE_PIN); // disable FW_EN
+	PIN_OFF(FW_ENABLE); // disable FW_EN
 
 	delay(500); // give some time to remove current from AIRs
 
-	PIN_OFF(LLIM_PIN); // disable AIR
-
-	PIN_OFF(HLIM_PIN);; // HACK: disables HV circuit
+	PIN_OFF(SHUTDOWN); // disable AIR
 
 	failsafe_warning(); // light up LED
 }
@@ -439,28 +425,28 @@ inline void failsafe_shutdown( void ) {
  * Light up warning light
  */
 inline void failsafe_warning( void ) {
-	LED_ON(WARNING_LIGHT_PIN);
+	LED_ON(AMS_LED);
 }
 
 /*
  * Light up BatLow
  */
 inline void batlow_warning( void ) {
-	LED_ON(BATLOW_PIN);
+	//LED_ON(BATLOW_PIN);
 }
 
 /*
  * Light up BatLow & reduce throttle
  */
 inline void batverylow_warning( void ) {
-	LED_ON(BATVERYLOW_PIN);
+	//LED_ON(BATVERYLOW_PIN);
 }
 
 /*
  * Battery ciritical (i.e. lowest allowed limit)
  */
 inline void batcritical_warning( void ) {
-	PIN_OFF(FW_ENABLE_PIN); // disable FW_EN
+	PIN_OFF(FW_ENABLE); // disable FW_EN
 
 	delay(500); // give some time to remove current from AIRs
 
