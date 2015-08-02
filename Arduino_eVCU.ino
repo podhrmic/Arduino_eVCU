@@ -36,7 +36,9 @@ inline void pin_toggle(int pin) {
  */
 DeviceGEVCU* device;
 DeviceBMS* bms;
+#if USE_WIFI
 ICHIPWIFI * ichip;
+#endif
 
 
 
@@ -198,7 +200,9 @@ void setup() {
 	// Instantiate device
 	device = new DeviceGEVCU();
 	bms = new DeviceBMS();
+#if USE_WIFI
 	ichip = new ICHIPWIFI();
+#endif
 
 	/**
 	 * Attach timers.
@@ -272,14 +276,16 @@ inline void handle_periodic_tasks(void){
 		device->setMinCellTemp(bms->getMinCellTemp());
 		device->setMaxCellVolt(bms->getMaxCellVolt());
 		device->setMinCellVolt(bms->getMinCellVolt());
-		//device->console_periodic();
+		device->console_periodic();
+#if USE_WIFI
 		ichip->handleTick();
+#endif
 		flag_console = 0;
 
 	}
 	if (flag_telemetry) {
 		//telemetry_periodic();
-		device->console_periodic();
+		///device->console_periodic();
 		flag_telemetry = 0;
 	}
 	// start failsafe checks only after T_MIN secs
@@ -318,14 +324,17 @@ inline void handle_periodic_tasks(void){
 inline void failsafe_periodic(void) {
 	// check for RTDS sound
 	static int rtds_cnt;
-	if ((device->vsm_state == VSM_ready) && (device->last_state != VSM_ready)) {
+	if ((device->vsm_state == VSM_ready) && (rtds_cnt < 10)) {
 		rtds_cnt++;
-		if (rtds_cnt > 0) {
-			device->last_state = device->vsm_state;
-		}
+		PIN_ON(RTDS_PIN);
+		//if (rtds_cnt > 0) {
+		//	device->last_state = device->vsm_state;
+		//}
 	}
-	else {
-		device->last_state = device->vsm_state;
+	else{
+		rtds_cnt = 0;
+		//device->last_state = device->vsm_state;
+		PIN_OFF(RTDS_PIN);
 	}
 	
 	// check rlecs for faults
@@ -333,23 +342,23 @@ inline void failsafe_periodic(void) {
 		if (bms->rlecsX[i].status == Active) {
 			// critical faults
 			if ((bms->rlecsX[i].faults & RLEC_CELL_1_AD_FAULT) != 0) {
-				//debuglink.printf("!RLEC_CELL_1_AD_FAULT - shutting down...\r\n");  
+				SerialUSB.print("!RLEC_CELL_1_AD_FAULT - shutting down...\r\n");  
 				failsafe_shutdown();
 			}
 			else if ((bms->rlecsX[i].faults & RLEC_CELL_VOLTAGE_CONNECTION_FAULT) != 0) {
-				//debuglink.printf("!RLEC_CELL_VOLTAGE_CONNECTION_FAULT - shutting down...\r\n");  
+				SerialUSB.print("!RLEC_CELL_VOLTAGE_CONNECTION_FAULT - shutting down...\r\n");  
 				failsafe_shutdown();
 			}
 			else if ((bms->rlecsX[i].faults & RLEC_CELL_VOLTAGE_AD_FAULT) != 0) {
-				//debuglink.printf("!RLEC_CELL_VOLTAGE_AD_FAULT - shutting down...\r\n");  
+				SerialUSB.print("!RLEC_CELL_VOLTAGE_AD_FAULT - shutting down...\r\n");  
 				failsafe_shutdown();
 			}
 			else if ((bms->rlecsX[i].faults & RLEC_MODULE_VOLTAGE_AD_FAULT) != 0) {
-				//debuglink.printf("!RLEC_MODULE_VOLTAGE_AD_FAULT - shutting down...\r\n");  
+				SerialUSB.print("!RLEC_MODULE_VOLTAGE_AD_FAULT - shutting down...\r\n");  
 				failsafe_shutdown();
 			}
 			else if ((bms->rlecsX[i].faults & RLEC_CELL_1_VOLTAGE_FAULT) != 0) {
-				//debuglink.printf("!RLEC_CELL_1_VOLTAGE_FAULT - shutting down...\r\n");  
+				SerialUSB.print("!RLEC_CELL_1_VOLTAGE_FAULT - shutting down...\r\n");  
 				failsafe_shutdown();
 			}
 
@@ -374,9 +383,9 @@ inline void failsafe_periodic(void) {
 			if (bms->rlecsX[i].min_cell_volt < MIN_CELL_VOLT) {
 				//batcritical_warning();
 				failsafe_shutdown();
-				//debuglink.printf("Minimal voltage reached - shutting down.\r\n");
-				//debuglink.printf("RLEC %i\r\n",i);
-				//debuglink.printf("Min voltage: %f\r\n",(float)bms->rlecsX[i].min_cell_volt*0.00244);
+				SerialUSB.print("Minimal voltage reached - shutting down.\r\n");
+				SerialUSB.print("RLEC " + String(i) + "\r\n");
+				SerialUSB.print("Min voltage: " + String((float)bms->rlecsX[i].min_cell_volt*0.00244) + "\r\n");
 			}
 			// warning if cell below low threshold
 			else if (bms->rlecsX[i].min_cell_volt < BAT_LOW) {
@@ -392,7 +401,7 @@ inline void failsafe_periodic(void) {
 			//Temperature limits
 			if (bms->rlecsX[i].max_cell_temp > MAX_CELL_TEMP) {
 				failsafe_shutdown();
-				//debuglink.printf("Max cell temperature reached- shutting down.\r\n");
+				SerialUSB.print("Max cell temperature reached- shutting down.\r\n");
 			}
 		}
 	}

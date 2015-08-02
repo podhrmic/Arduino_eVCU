@@ -12,6 +12,7 @@
 #define USE_WIFI 0
 #define PRINT_DEBUG 0
 #define PRINT_DATA 1
+#define PRINT_STRING 1
 
 // Voltage defines
 #define MAX_CELL_VOLT (4.2/RLEC_CAN_VOLTAGE_MULT)

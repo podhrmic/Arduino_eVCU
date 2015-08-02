@@ -131,13 +131,13 @@ void DeviceGEVCU::console_periodic(){
     float f_timer = (float)timer*0.003;
     float f_sys_time = (float)sys_time/100;
 
-#ifdef PRINT_STRING
+#if PRINT_STRING
 	char buffer[1024];
 	sprintf(buffer, "%f, %f,"
   			 // phase temp
   			 "%i, %i, %i,"
   			 // temps   rtd temp				motor temp
-  			 "%i, %i,  	%i, %i, %i, %i, %i,		%i,"
+  			 "%i, %i, %i, %i, %i, %i, %i, %i,"
   			 // torque
   			 "%i, %i, %i,"
   			 // analog in
@@ -147,7 +147,7 @@ void DeviceGEVCU::console_periodic(){
   			 //motor info
   			 "%i, %i, %i, %i,"
   			 //current
-  			 "%i, %i, %i, 	%i,"
+  			 "%i, %i, %i, %i,"
   			 // Voltage
   			 "%i, %i, %i, %i,"
   			 // Flux
@@ -387,7 +387,7 @@ void DeviceGEVCU::console_periodic(){
 #endif /* PRINT_STRING */
 
 #if PRINT_DATA
-#ifdef PRINT_STRING
+#if PRINT_STRING
 	SerialUSB.print(buffer);
 #else /* print binary */
 	Serial.write(buf, packet_length);
