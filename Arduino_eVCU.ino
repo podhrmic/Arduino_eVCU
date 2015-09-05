@@ -2,6 +2,9 @@
 #include <DueTimer.h>
 #include "variant.h"
 #include <due_can.h>
+#include <genieArduino.h>
+Genie genie;
+
 
 #include "main.h"
 
@@ -109,31 +112,11 @@ void sendWiReach(char* message)
 	}
 }
 
+#define CURRENT_METER_SCREEN_ID 0x01
 void initWiReach()
 {
 #if PRINT_DEBUG
 	SerialUSB.begin(115200); // use SerialUSB only as the programming port doesn't work
-#endif
-	Serial2.begin(115200); // use Serial3 for GEVCU2, use Serial2 for GEVCU3+4
-
-	sendWiReach("AT+iFD");//Host connection set to serial port
-	delay(5000);
-	sendWiReach("AT+iHIF=1");//Host connection set to serial port
-	sendWiReach("AT+iBDRF=9");//Automatic baud rate on host serial port
-	sendWiReach("AT+iRPG=secret"); //Password for iChip wbsite
-	sendWiReach("AT+iWPWD=secret");//Password for our website
-	sendWiReach("AT+iWST0=0");//Connection security wap/wep/wap2 to no security
-	sendWiReach("AT+iWLCH=4");  //Wireless channel
-	sendWiReach("AT+iWLSI=VMS_EVCU");//SSID
-	sendWiReach("AT+iWSEC=1");//IF security is used, set for WPA2-AES
-	sendWiReach("AT+iSTAP=1");//Act as AP
-	sendWiReach("AT+iDIP=192.168.3.10");//default ip - must be 10.x.x.x
-	sendWiReach("AT+iDPSZ=8");//DHCP pool size
-	sendWiReach("AT+iAWS=1");//Website on
-	sendWiReach("AT+iDOWN");//Powercycle reset
-	delay(5000);
-#if PRINT_DEBUG
-	SerialUSB.println("WiReach Wireless Module Initialized....");
 #endif
 }
 
@@ -169,7 +152,7 @@ void setup() {
 	PIN_ON(SHUTDOWN);
 
 	// DOUT6 - DC_ENABLE OFF
-	//pinMode(DC_ENABLE, OUTPUT);
+	//p		inMode(DC_ENABLE, OUTPUT);
 	//PIN_OFF(DC_ENABLE);
 
 	// DOUT7 - IMD_LED
@@ -461,3 +444,4 @@ inline void batcritical_warning( void ) {
 
 	failsafe_shutdown(); // open shutdown circuit
 }
+

@@ -9,9 +9,9 @@
 #define CONFIG_H_
 
 // Some defines for the compilation
-#define USE_WIFI 0
-#define PRINT_DEBUG 0
-#define PRINT_DATA 1
+#define USE_WIFI 1
+#define PRINT_DEBUG 1
+#define PRINT_DATA 0
 #define PRINT_STRING 1
 
 // Voltage defines
@@ -106,3 +106,4 @@
 #endif
 
 #endif /* CONFIG_H_ */
+

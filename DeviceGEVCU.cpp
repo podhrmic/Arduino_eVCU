@@ -394,6 +394,7 @@ void DeviceGEVCU::console_periodic(){
 #endif /* PRINT_STRING */
 #endif
 
+	/*
 #if PRINT_DEBUG
 	SerialUSB.print("Up time: " + String(((float)sys_time)/100) + "\r\n");
     SerialUSB.print("Timer: " + String(timer*0.003) + "\r\n");
@@ -401,6 +402,7 @@ void DeviceGEVCU::console_periodic(){
     SerialUSB.print("vsm_state: " + String(vsm_state) + "\r\n");
     SerialUSB.print("sys_12v: " + String(sys_12v) + "\r\n");
 #endif
+    */
 
 }
 
@@ -525,6 +527,7 @@ void DeviceGEVCU::process() {
 		handleCanFrame(&frame);
 	}
 }
+
 
 
 

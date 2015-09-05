@@ -35,7 +35,7 @@ public:
 	void can_init_rlecs();//
 	void can_periodic();
 	//void can_event_rlecs(); - is now process()
-	void mlec_charger_periodic(RLECModule* module, CAN_FRAME* msg6);
+	void mlec_charger_periodic(RLECModule* module);
 	void mlec_init_broadcast();//
 	void mlec_init_msgs();//
 	void mlec_update_msg_ids(uint16_t offset);
@@ -107,3 +107,4 @@ public:
 };
 
 #endif /* DEVICEBMS_H_ */
+

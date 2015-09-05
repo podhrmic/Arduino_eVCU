@@ -263,3 +263,4 @@ void ICHIPWIFI::sendToSocket(int socket, String data) {
 	temp = temp + String(buff) + data;
 	sendCmd(temp, SEND_SOCKET);
 }
+

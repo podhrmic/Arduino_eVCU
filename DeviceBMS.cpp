@@ -78,7 +78,7 @@ void DeviceBMS::can_init_rlecs() {
                 mlec_update_msg_ids(rlec_txoffset+0x2*rlec_idx);
 
                 // Modify messages for charger (TODO)
-                //mlec_charger_periodic(&rlecsX[rlec_idx],&tMsg0);
+                mlec_charger_periodic(&rlecsX[rlec_idx]);
 
                 mlec_send_request();
 
@@ -101,8 +101,16 @@ void DeviceBMS::can_init_rlecs() {
   * Charger function
   *
   */
- void mlec_charger_periodic(RLECModule* module, CAN_FRAME* msg6 ) {
+ void DeviceBMS::mlec_charger_periodic(RLECModule* module) {
   uint32_t balance_resistors = 0;
+
+  for (uint8_t j = 0; j<RLEC_CELLS;j++) {
+      if (module->cell_voltage[j] > (min_cell_volt + BAT_DELTA_BALANCE*10)) {
+          balance_resistors = balance_resistors + (0x1 << j);
+      }
+  }
+
+  /*
   if (STANDARD_CHARGE_MODE){
      //debuglink.printf("STANDARD CHARGE MODE\r\n");
      // standard charge mode
@@ -112,11 +120,8 @@ void DeviceBMS::can_init_rlecs() {
              digitalWrite(HLIM_PIN, LOW);
              module->charge_status = 1;
          }
-
-
          // update status
          //TBD
-
          for (uint8_t j = 0; j<RLEC_CELLS;j++) {
          // if any cell is more than delta from the lowest cell
              if ((module->cell_voltage[j] - module->min_cell_volt) >= BAT_DELTA_BALANCE) {
@@ -124,12 +129,10 @@ void DeviceBMS::can_init_rlecs() {
              }
              //debuglink.printf("delta: %d\r\n", (module->cell_voltage[j] - module->min_cell_volt));
          }
-
          if (balance_resistors == 0) {
              module->charge_status = 0;
          }
          //debuglink.printf("delta: %d\r\n", BAT_DELTA_BALANCE);
-
          //debuglink.printf("BALANCING\r\n");
      }
   }
@@ -144,10 +147,11 @@ void DeviceBMS::can_init_rlecs() {
          }
      }
   }
+  */
  //debuglink.printf("balance resistors: %X\r\n", balance_resistors);
  // Configure message to given RLEC
- msg6->data.bytes[3] = (uint8_t)(balance_resistors >> 8);
- msg6->data.bytes[4] = (uint8_t)(balance_resistors & 0xFF);
+ tMsg0.data.bytes[3] = (uint8_t)(balance_resistors >> 8);
+ tMsg0.data.bytes[4] = (uint8_t)(balance_resistors & 0xFF);
  }
 
 
@@ -532,3 +536,4 @@ void DeviceBMS::mlec_init_broadcast(void){
     bdc5.data.bytes[1] = 0x1E;
     bdc5.extended = false;;
 }
+
