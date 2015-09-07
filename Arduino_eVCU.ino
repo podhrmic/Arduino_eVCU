@@ -260,6 +260,7 @@ inline void handle_periodic_tasks(void){
 		device->setMaxCellVolt(bms->getMaxCellVolt());
 		device->setMinCellVolt(bms->getMinCellVolt());
 		device->console_periodic();
+		bms->vsm_state = device->getVSMState();
 #if USE_WIFI
 		ichip->handleTick();
 #endif

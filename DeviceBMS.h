@@ -12,6 +12,7 @@
 #include "due_can.h"
 #include "RLECModule.h"
 #include "config.h"
+#include "DeviceGEVCU.h"
 
 #define RLEC_CAN_VOLTAGE_MULT 0.00244
 #define RLEC_CAN_MODULE_MULT 0.0122
@@ -104,6 +105,9 @@ public:
 	int8_t min_cell_temp;
 	uint16_t max_cell_volt;
 	uint16_t min_cell_volt;
+
+	// for charging diagnostics
+	enum VSMstate vsm_state;// u
 };
 
 #endif /* DEVICEBMS_H_ */

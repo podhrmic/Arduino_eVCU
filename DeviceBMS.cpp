@@ -15,6 +15,8 @@ DeviceBMS::DeviceBMS() {
 	min_cell_temp = 100;
 	max_cell_volt = 0;
 	min_cell_volt = -1;
+
+	enum VSMstate vsm_state = VSM_start;// u
 }
 
 void DeviceBMS::can_init_rlecs() {
@@ -104,11 +106,15 @@ void DeviceBMS::can_init_rlecs() {
  void DeviceBMS::mlec_charger_periodic(RLECModule* module) {
   uint32_t balance_resistors = 0;
 
-  for (uint8_t j = 0; j<RLEC_CELLS;j++) {
-      if (module->cell_voltage[j] > (min_cell_volt + BAT_DELTA_BALANCE*10)) {
-          balance_resistors = balance_resistors + (0x1 << j);
-      }
+  // balance only when not running...
+  if (vsm_state != VSM_running) {
+	  for (uint8_t j = 0; j<RLEC_CELLS;j++) {
+	      if (module->cell_voltage[j] > (min_cell_volt + BAT_DELTA_BALANCE*10)) {
+	          balance_resistors = balance_resistors + (0x1 << j);
+	      }
+	  }
   }
+
 
   /*
   if (STANDARD_CHARGE_MODE){

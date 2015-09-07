@@ -84,6 +84,9 @@ public:
 		min_cell_volt = minCellVolt;
 	}
 
+	enum VSMstate getVSMState(void) {
+		return vsm_state;
+	}
 
 
 	CANRaw *bus;	// the can bus instance which this CanHandler instance is assigned to
