@@ -151,7 +151,9 @@ void DeviceBMS::send_rlec_info(RLECModule* rlec) {
 	SerialUSB.print("min_cell_volt: " + String((float)(rlec->min_cell_volt*RLEC_CAN_VOLTAGE_MULT)) + "[V]\r\n");
 
 	SerialUSB.print("rlec_temp: " + String(rlec->rlec_temp) + "[C]\r\n");
-	SerialUSB.print("balance_resistors: " + String(rlec->balance_resistors) + "\r\n");
+	SerialUSB.print("balance_resistors: ");
+	SerialUSB.print(rlec->balance_resistors, HEX);
+	SerialUSB.print("\r\n");
 	SerialUSB.print("faults: " + String(rlec->faults) + "\r\n");
 
 	SerialUSB.print("rlec_volt: " + String((float)(rlec->rlec_volt*RLEC_CAN_MODULE_MULT)) + "[V]\r\n");

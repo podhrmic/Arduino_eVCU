@@ -296,16 +296,17 @@ inline void failsafe_periodic(void) {
 
 			// warnings
 			else if ((bms->rlecsX[i].faults & RLEC_CELL_TEMP_AD_FAULT) != 0) {
-				//debuglink.printf("!RLEC_CELL_TEMP_AD_FAULT - warning light on.\r\n");  
+				SerialUSB.print("!RLEC_CELL_TEMP_AD_FAULT - warning light on.\r\n");  
 				failsafe_warning();
 			}
 			else if ((bms->rlecsX[i].faults & RLEC_RLEC_TEMP_AD_FAULT) != 0) {
-				//debuglink.printf("!RLEC_RLEC_TEMP_AD_FAULT - warning light on.\r\n");  
+				SerialUSB.print("!RLEC_RLEC_TEMP_AD_FAULT - warning light on.\r\n");  
 				failsafe_warning();
 			}
 
 			// Charging - overcharge protection
 			if (bms->rlecsX[i].max_cell_volt > MAX_CELL_VOLT) {
+				SerialUSB.print("Max cell voltage reached- shutting down.\r\n");
 				charger_shutdown();
 			}
 

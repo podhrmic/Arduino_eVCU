@@ -129,6 +129,19 @@ DeviceGEVCU::DeviceGEVCU() {
 	min_cell_temp = 0;
 	max_cell_volt = 0;
 	min_cell_volt = 0;
+
+	// print header
+#if PRINT_DATA
+#if PRINT_STRING
+	SerialUSB.print("f_timer,f_sys_time,phase_temp_A,phase_temp_B,phase_temp_C,gate_temp,board_temp,rtd_temp_1,rtd_temp_2"
+			",rtd_temp_3,rtd_temp_4,rtd_temp_5,motor_temp,torque_shud,torque_cmd,torque_fb,analog_in_1,analog_in_2,analog_in_3,"
+			"analog_in_4,digital_in_1,digital_in_2,digital_in_3,digital_in_4,digital_in_5,digital_in_6,motor_angle,motor_speed,"
+			"inv_freq,resolver_angle,phase_current_A,phase_current_B,phase_current_C,dc_current,dc_voltage,output_volt,p_ab_volt,"
+			"p_bc_volt,flux_cmd,flux_fb,id_fb,iq_fb,id_cmd,iq_cmd,ref_1_5,ref_2_5,ref_5_0,sys_12v,vsm_state,inv_state,relay_state,"
+			"inv_mode,inv_cmd,inv_enable,motor_direction,faults_1,faults_2,faults_3,faults_4,faults_5,faults_6,faults_7,faults_8,"
+			"modulation_index,flux_reg_out,min_cell_temp,max_cell_temp,min_cell_volt,max_cell_volt\r\n");
+#endif /* PRINT_STRING */
+#endif
 }
 
 /**

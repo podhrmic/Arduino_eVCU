@@ -29,12 +29,12 @@
 #define CONFIG_H_
 
 // Some defines for the compilation
-#define PRINT_DEBUG 1
-#define PRINT_DATA 0
+#define PRINT_DEBUG 0
+#define PRINT_DATA 1
 #define PRINT_STRING 1
 
 // Voltage defines
-#define MAX_CELL_VOLT (4.2/RLEC_CAN_VOLTAGE_MULT)
+#define MAX_CELL_VOLT (4.3/RLEC_CAN_VOLTAGE_MULT)
 #define MIN_CELL_VOLT (2.5/RLEC_CAN_VOLTAGE_MULT)
 
 #define MAX_CELL_TEMP 60
