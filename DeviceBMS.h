@@ -1,10 +1,30 @@
 /*
- * DeviceBMS.h
+ * Copyright (C) 2015 Michal Podhradsky
+ * michal.podhradsky@pdx.edu
  *
- *  Created on: Dec 1, 2014
- *      Author: fwmav
+ * This file is part of Viking Motorsports Arduino_eVCU.
+ *
+ * Viking Motorsports Arduino_eVCU is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * Viking Motorsports Arduino_eVCU is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Viking Motorsports Arduino_eVCU; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ *
  */
-
+/**
+ * @file DeviceBMS.h
+ *
+ * Battery Management System
+ */
 #ifndef DEVICEBMS_H_
 #define DEVICEBMS_H_
 
@@ -21,11 +41,10 @@
 #define STANDARD_CHARGE_MODE 0
 
 enum MLECStatus {
-  MLECUninit,
-  MLECInit,
-  MLECRunning
+	MLECUninit,
+	MLECInit,
+	MLECRunning
 };
-
 
 
 class DeviceBMS {
@@ -35,7 +54,7 @@ public:
 	void handleCanFrame(CAN_FRAME *frame);
 	void can_init_rlecs();//
 	void can_periodic();
-	//void can_event_rlecs(); - is now process()
+
 	void mlec_charger_periodic(RLECModule* module);
 	void mlec_init_broadcast();//
 	void mlec_init_msgs();//
@@ -68,38 +87,38 @@ public:
 
 	CANRaw *bus;	// the can bus instance which this CanHandler instance is assigned to
 
-    // Rx message
-    CAN_FRAME rx_msg;
+	// Rx message
+	CAN_FRAME rx_msg;
 
-    // RLEC request msg
-    CAN_FRAME tMsg0;
-    CAN_FRAME tMsg1;
-    CAN_FRAME tMsg2;
-    CAN_FRAME tMsg3;
+	// RLEC request msg
+	CAN_FRAME tMsg0;
+	CAN_FRAME tMsg1;
+	CAN_FRAME tMsg2;
+	CAN_FRAME tMsg3;
 
-    // Broadcast msgs
-    CAN_FRAME bdc0;
-    CAN_FRAME bdc1;
-    CAN_FRAME bdc2;
-    CAN_FRAME bdc3;
-    CAN_FRAME bdc4;
-    CAN_FRAME bdc5;
+	// Broadcast msgs
+	CAN_FRAME bdc0;
+	CAN_FRAME bdc1;
+	CAN_FRAME bdc2;
+	CAN_FRAME bdc3;
+	CAN_FRAME bdc4;
+	CAN_FRAME bdc5;
 
-    // array with active RLECS
-    uint8_t rlecs[NUM_RLECS];
-    RLECModule rlecsX[NUM_RLECS];
+	// array with active RLECS
+	uint8_t rlecs[NUM_RLECS];
+	RLECModule rlecsX[NUM_RLECS];
 
-    // Index of current RLECs probe
-    uint8_t rlec_idx;
+	// Index of current RLECs probe
+	uint8_t rlec_idx;
 
-    // Tx Message offset
-    uint8_t rlec_txoffset;
+	// Tx Message offset
+	uint8_t rlec_txoffset;
 
-    // Status
-    enum MLECStatus status;
+	// Status
+	enum MLECStatus status;
 
-    // Variables for RLEC scan
-    uint8_t request_sent;
+	// Variables for RLEC scan
+	uint8_t request_sent;
 
 	int8_t max_cell_temp;
 	int8_t min_cell_temp;
@@ -111,4 +130,3 @@ public:
 };
 
 #endif /* DEVICEBMS_H_ */
-

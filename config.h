@@ -1,15 +1,34 @@
 /*
- * config.h
+ * Copyright (C) 2015 Michal Podhradsky
+ * michal.podhradsky@pdx.edu
  *
- *  Created on: Dec 1, 2014
- *      Author: fwmav
+ * This file is part of Viking Motorsports Arduino_eVCU.
+ *
+ * Viking Motorsports Arduino_eVCU is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * Viking Motorsports Arduino_eVCU is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Viking Motorsports Arduino_eVCU; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ *
  */
-
+/**
+ * @file config.h
+ *
+ * ECU Configuration file
+ */
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
 // Some defines for the compilation
-#define USE_WIFI 1
 #define PRINT_DEBUG 1
 #define PRINT_DATA 0
 #define PRINT_STRING 1
@@ -49,7 +68,6 @@
 #define AMS_LED 6 // DOUT2
 #define FW_ENABLE 7 // DOUT3
 #define SHUTDOWN 2 // DOUT4
-// #define DC_ENABLE 8 // DOUT6, PC22 - we are not using DC enable (always on)
 #define IMD_LED 9 // DOUT7, PC21
 
 #define THROTTLE_IN_1 57 // PA22, Analog 3, AIN0
@@ -106,4 +124,3 @@
 #endif
 
 #endif /* CONFIG_H_ */
-

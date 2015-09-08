@@ -1,10 +1,30 @@
 /*
- * DeviceGEVCU.h
+ * Copyright (C) 2015 Michal Podhradsky
+ * michal.podhradsky@pdx.edu
  *
- *  Created on: Nov 30, 2014
- *      Author: fwmav
+ * This file is part of Viking Motorsports Arduino_eVCU.
+ *
+ * Viking Motorsports Arduino_eVCU is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * Viking Motorsports Arduino_eVCU is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Viking Motorsports Arduino_eVCU; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ *
  */
-
+/**
+ * @file DeviceGEVCU.h
+ *
+ * Vehicle Control Unit
+ */
 #ifndef DEVICEGEVCU_H_
 #define DEVICEGEVCU_H_
 
@@ -87,9 +107,8 @@ public:
 	enum VSMstate getVSMState(void) {
 		return vsm_state;
 	}
-
-
-	CANRaw *bus;	// the can bus instance which this CanHandler instance is assigned to
+	// the can bus instance which this CanHandler instance is assigned to
+	CANRaw *bus;
 
 	// Time
 	uint32_t timer; // u
@@ -176,4 +195,3 @@ private:
 };
 
 #endif /* DEVICEGEVCU_H_ */
-

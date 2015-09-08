@@ -1,11 +1,33 @@
-
+/*
+ * Copyright (C) 2015 Michal Podhradsky
+ * michal.podhradsky@pdx.edu
+ *
+ * This file is part of Viking Motorsports Arduino_eVCU.
+ *
+ * Viking Motorsports Arduino_eVCU is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * Viking Motorsports Arduino_eVCU is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Viking Motorsports Arduino_eVCU; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ *
+ */
+/**
+ * @file Arduino_eVCU.ino
+ *
+ * Application main file
+ */
 #include <DueTimer.h>
 #include "variant.h"
 #include <due_can.h>
-#include <genieArduino.h>
-Genie genie;
-
-
 #include "main.h"
 
 
@@ -39,11 +61,6 @@ inline void pin_toggle(int pin) {
  */
 DeviceGEVCU* device;
 DeviceBMS* bms;
-#if USE_WIFI
-ICHIPWIFI * ichip;
-#endif
-
-
 
 /**
  * Timer flags
@@ -99,42 +116,9 @@ void datalog_timer(void){
 
 
 /**
- * Wifi stuff
- */
-void sendWiReach(char* message)
-{
-	Serial2.println(message);
-	delay(700);
-	while (Serial2.available()) {
-#if PRINT_DEBUG
-		SerialUSB.write(Serial2.read());
-#endif
-	}
-}
-
-#define CURRENT_METER_SCREEN_ID 0x01
-void initWiReach()
-{
-#if PRINT_DEBUG
-	SerialUSB.begin(115200); // use SerialUSB only as the programming port doesn't work
-#endif
-}
-
-
-/**
  * Setup Arduino
  */
 void setup() {
-	//wifi init
-#if USE_WIFI
-	initWiReach();
-#endif
-
-	// initialize pins
-	// DOUT0 - no RTDS
-	//pinMode(THROTTLE_OUT, OUTPUT);
-	//PIN_OFF(THROTTLE_OUT);
-
 	// DOUT1 - no throttle
 	pinMode(RTDS_PIN, OUTPUT);
 	PIN_OFF(RTDS_PIN);
@@ -150,10 +134,6 @@ void setup() {
 	// DOUT4 - SHUTDOWN OPEN (OFF)
 	pinMode(SHUTDOWN, OUTPUT);
 	PIN_ON(SHUTDOWN);
-
-	// DOUT6 - DC_ENABLE OFF
-	//p		inMode(DC_ENABLE, OUTPUT);
-	//PIN_OFF(DC_ENABLE);
 
 	// DOUT7 - IMD_LED
 	pinMode(IMD_LED, OUTPUT);
@@ -183,22 +163,11 @@ void setup() {
 	// Instantiate device
 	device = new DeviceGEVCU();
 	bms = new DeviceBMS();
-#if USE_WIFI
-	ichip = new ICHIPWIFI();
-#endif
 
 	/**
 	 * Attach timers.
 	 * It is calling for threads...
 	 */
-	// 0. datalog - not using datalog timer at this point
-	//Timer0.attachInterrupt(datalog_timer).setFrequency(DATALOG_FREQUENCY).start();
-	//delay(50); // to offset the timer firing a little bit
-
-	// 1. heartbeat
-	//Timer1.attachInterrupt(heartbeat_timer).setFrequency(HEARTBEAT_FREQUENCY).start();
-	//delay(50); // to offset the timer firing a little bit
-
 	// 2. console (serial over usb)
 	Timer2.attachInterrupt(console_timer).setFrequency(CONSOLE_FREQUENCY).start();
 	delay(50); // to offset the timer firing a little bit
@@ -214,14 +183,6 @@ void setup() {
 	// 5. BMS CAN
 	Timer5.attachInterrupt(bms_can_timer).setFrequency(BMS_CAN_FREQUENCY).start();
 	delay(50); // to offset the timer firing a little bit
-
-	// 6. RMS CAN - we are not sending anything on RMS CAN
-	//Timer6.attachInterrupt(rms_can_timer).setFrequency(RMS_CAN_FREQUENCY).start();
-	//delay(50); // to offset the timer firing a little bit
-
-	// 7. sensor inputs - we are not doing this AFAIK
-	//Timer7.attachInterrupt(sensors_input_timer).setFrequency(SENSOR_INPUT_FREQUENCY).start();
-	//delay(50); // to offset the timer firing a little bit
 
 	// 8. system time
 	Timer8.attachInterrupt(systime_timer).setFrequency(SYSTIME_FREQUENCY).start();
@@ -253,7 +214,6 @@ void loop() {
  */
 inline void handle_periodic_tasks(void){
 	if (flag_console) {
-		//console_periodic();
 		bms->update_battery_data();
 		device->setMaxCellTemp(bms->getMaxCellTemp());
 		device->setMinCellTemp(bms->getMinCellTemp());
@@ -261,15 +221,10 @@ inline void handle_periodic_tasks(void){
 		device->setMinCellVolt(bms->getMinCellVolt());
 		device->console_periodic();
 		bms->vsm_state = device->getVSMState();
-#if USE_WIFI
-		ichip->handleTick();
-#endif
 		flag_console = 0;
 
 	}
 	if (flag_telemetry) {
-		//telemetry_periodic();
-		///device->console_periodic();
 		flag_telemetry = 0;
 	}
 	// start failsafe checks only after T_MIN secs
@@ -285,15 +240,12 @@ inline void handle_periodic_tasks(void){
 		flag_bms_can = 0;
 	}
 	if (flag_rms_can) {
-		//rms_can_periodic();
 		flag_rms_can = 0;
 	}
 	if (flag_sensors_input) {
-		//sensors_input_periodic();
 		flag_sensors_input = 0;
 	}
 	if (flag_datalog) {
-		//datalog_periodic();
 		flag_datalog = 0;
 	}
 }
@@ -311,16 +263,12 @@ inline void failsafe_periodic(void) {
 	if ((device->vsm_state == VSM_ready) && (rtds_cnt < 10)) {
 		rtds_cnt++;
 		PIN_ON(RTDS_PIN);
-		//if (rtds_cnt > 0) {
-		//	device->last_state = device->vsm_state;
-		//}
 	}
 	else{
 		rtds_cnt = 0;
-		//device->last_state = device->vsm_state;
 		PIN_OFF(RTDS_PIN);
 	}
-	
+
 	// check rlecs for faults
 	for (int i=0;i<NUM_RLECS;i++){
 		if (bms->rlecsX[i].status == Active) {
@@ -359,13 +307,11 @@ inline void failsafe_periodic(void) {
 			// Charging - overcharge protection
 			if (bms->rlecsX[i].max_cell_volt > MAX_CELL_VOLT) {
 				charger_shutdown();
-				//debuglink.printf("Charging Stopped.\r\n");  
 			}
 
 			// Voltage limits
 			// warning if minimal allowed voltage reached
 			if (bms->rlecsX[i].min_cell_volt < MIN_CELL_VOLT) {
-				//batcritical_warning();
 				failsafe_shutdown();
 				SerialUSB.print("Minimal voltage reached - shutting down.\r\n");
 				SerialUSB.print("RLEC " + String(i) + "\r\n");
@@ -373,13 +319,9 @@ inline void failsafe_periodic(void) {
 			}
 			// warning if cell below low threshold
 			else if (bms->rlecsX[i].min_cell_volt < BAT_LOW) {
-				//batlow_warning();
-				//debuglink.printf("Warning - low voltage.\r\n"); 
 			}
 			// warning if cell below very low threshold
 			else if (bms->rlecsX[i].min_cell_volt < BAT_VERY_LOW) {
-				//batverylow_warning();
-				//debuglink.printf("Warning - very low voltage.\r\n"); 
 			}
 
 			//Temperature limits
@@ -396,7 +338,6 @@ inline void failsafe_periodic(void) {
  * HLIM: 1=ON, 0=OFF
  */
 inline void charger_shutdown( void ) {
-	//PIN_OFF(SHUTDOWN); // disable AIR
 	failsafe_shutdown();
 }
 
@@ -425,14 +366,12 @@ inline void failsafe_warning( void ) {
  * Light up BatLow
  */
 inline void batlow_warning( void ) {
-	//LED_ON(BATLOW_PIN);
 }
 
 /*
  * Light up BatLow & reduce throttle
  */
 inline void batverylow_warning( void ) {
-	//LED_ON(BATVERYLOW_PIN);
 }
 
 /*
@@ -445,4 +384,3 @@ inline void batcritical_warning( void ) {
 
 	failsafe_shutdown(); // open shutdown circuit
 }
-
