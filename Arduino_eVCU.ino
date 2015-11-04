@@ -313,10 +313,11 @@ inline void failsafe_periodic(void) {
 			// Voltage limits
 			// warning if minimal allowed voltage reached
 			if (bms->rlecsX[i].min_cell_volt < MIN_CELL_VOLT) {
-				failsafe_shutdown();
+				//SerialUSB.print("Minimal voltage value: " +()  "\r\n");
 				SerialUSB.print("Minimal voltage reached - shutting down.\r\n");
 				SerialUSB.print("RLEC " + String(i) + "\r\n");
 				SerialUSB.print("Min voltage: " + String((float)bms->rlecsX[i].min_cell_volt*0.00244) + "\r\n");
+				failsafe_shutdown();
 			}
 			// warning if cell below low threshold
 			else if (bms->rlecsX[i].min_cell_volt < BAT_LOW) {

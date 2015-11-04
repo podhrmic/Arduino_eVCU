@@ -108,6 +108,9 @@ void DeviceBMS::can_periodic(){
 
 			//Telemetry (OPTIONAL)
 #if PRINT_DEBUG
+			//SerialUSB.print("Min voltage: " + String((float)min_cell_volt*0.00244) + "\r\n");
+			//SerialUSB.print("Minimal voltage value: " +String((float)min_cell_volt*RLEC_CAN_VOLTAGE_MULT)  "\r\n");
+
 			send_rlec_info(&(rlecsX[rlec_idx]));
 #endif
 		}
@@ -125,7 +128,8 @@ void DeviceBMS::can_periodic(){
  * Charger function
  */
 void DeviceBMS::mlec_charger_periodic(RLECModule* module) {
-	uint32_t balance_resistors = 0;
+	static uint16_t balance_resistors;
+	balance_resistors = 0;
 
 	// balance only when not running...
 	if (vsm_state != VSM_running) {
@@ -135,6 +139,10 @@ void DeviceBMS::mlec_charger_periodic(RLECModule* module) {
 			}
 		}
 	}
+	else {
+	  balance_resistors = 0;
+	}
+
 
 	// Configure message to given RLEC
 	tMsg0.data.bytes[3] = (uint8_t)(balance_resistors >> 8);

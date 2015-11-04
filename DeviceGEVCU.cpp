@@ -439,6 +439,7 @@ SerialUSB.print("Timer: " + String(timer*0.003) + "\r\n");
 SerialUSB.print("max_cell_temp: " + String(max_cell_temp) + "\r\n");
 SerialUSB.print("vsm_state: " + String(vsm_state) + "\r\n");
 SerialUSB.print("sys_12v: " + String(sys_12v) + "\r\n");
+SerialUSB.print("DC_voltage: " + String(dc_voltage) + "\r\n");
 #endif
 }
 
