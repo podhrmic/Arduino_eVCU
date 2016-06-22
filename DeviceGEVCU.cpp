@@ -33,7 +33,7 @@
  */
 DeviceGEVCU::DeviceGEVCU() {
 	sys_time = 0;
-	bus = &CAN;//because we want CAN0 now
+	bus = &CAN2;//because we want CAN1 now
 	timer = 0;
 	phase_temp[0] = 0;//3x i
 	phase_temp[1] = 0;
@@ -440,6 +440,22 @@ SerialUSB.print("max_cell_temp: " + String(max_cell_temp) + "\r\n");
 SerialUSB.print("vsm_state: " + String(vsm_state) + "\r\n");
 SerialUSB.print("sys_12v: " + String(sys_12v) + "\r\n");
 SerialUSB.print("DC_voltage: " + String(dc_voltage) + "\r\n");
+
+static int throttle_1, throttle_2;
+throttle_1 = analogRead(THROTTLE_IN_1);
+throttle_2 = analogRead(THROTTLE_IN_2);
+
+// min: 150
+// max: 800
+// scale it to 0-255
+static float a_out;
+a_out = ((throttle_1 - 150.0)/650.0)*254.0;
+analogWrite(RMS_THROTTLE, (int)a_out);
+
+SerialUSB.print("Throttle1: " + String(throttle_1) + "\r\n");
+SerialUSB.print("Throttle2: " + String(throttle_2) + "\r\n");
+SerialUSB.print("ThrottleOut: " + String((int)a_out) + "\r\n");
+
 #endif
 }
 

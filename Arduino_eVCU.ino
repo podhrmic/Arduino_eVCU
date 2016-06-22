@@ -119,32 +119,43 @@ void datalog_timer(void){
  * Setup Arduino
  */
 void setup() {
-	// DOUT1 - no throttle
+  // DOUT0 - RTDS OFF
 	pinMode(RTDS_PIN, OUTPUT);
 	PIN_OFF(RTDS_PIN);
 
-	// DOUT2 - AMS ERR ON 
-	pinMode(AMS_LED, OUTPUT);
-	PIN_OFF(AMS_LED);
-
-	// DOUT3 - FW_ENABLE OFF 
+	// DOUT1 - FW_ENABLE ON
 	pinMode(FW_ENABLE, OUTPUT);
 	PIN_ON(FW_ENABLE);
+	
+	// DOUT2 - REGEN_DISABLE OFF
+  pinMode(REGEN_DISABLE, OUTPUT);
+  PIN_OFF(REGEN_DISABLE);	
+	
+  // DOUT3 - NC
+	pinMode(PIN_DOUT3, OUTPUT);
+	PIN_OFF(PIN_DOUT3);
 
-	// DOUT4 - SHUTDOWN OPEN (OFF)
-	pinMode(SHUTDOWN, OUTPUT);
-	PIN_ON(SHUTDOWN);
+	// DOUT4 - RMS_THROTTLE ON
+	pinMode(RMS_THROTTLE, OUTPUT);
+	PIN_ON(RMS_THROTTLE);
 
-	// DOUT7 - IMD_LED
-	pinMode(IMD_LED, OUTPUT);
-	PIN_OFF(IMD_LED);
+	// DOUT5 - AMS_STATUS ON (LOW=OK)
+	pinMode(AMS_STATUS, OUTPUT);
+	PIN_ON(AMS_STATUS);
 
-	// BRAKE_EN
-	pinMode(BRAKE_EN, INPUT);
+	// DOUT6 - PWR_READY ON
+  pinMode(PWR_READY, OUTPUT);
+  PIN_ON(PWR_READY);	
 
-	//IMD_STATUS
-	pinMode(IMD_STATUS, INPUT);
+  // DOUT7 - PWR_STDBY OFF
+  pinMode(PWR_STDBY, OUTPUT);
+  PIN_OFF(PWR_STDBY);
 
+  // Analog inputs
+  //pinMode(THROTTLE_IN_1, INTPUT);
+  //pinMode(THROTTLE_IN_2, INTPUT);
+  
+  
 	//setup ports
 	Can0.begin(CAN_BPS_1000K); // RMS can == CAN
 
@@ -258,6 +269,17 @@ inline void handle_periodic_tasks(void){
  *
  */
 inline void failsafe_periodic(void) {
+  /*
+  static int counter = 0;
+  if (counter > 255) {
+    counter = 0;
+  }
+  // send the square wave signal to the LED:
+  analogWrite(RMS_THROTTLE, counter);
+  counter++;
+  */
+  
+  
 	// check for RTDS sound
 	static int rtds_cnt;
 	if ((device->vsm_state == VSM_ready) && (rtds_cnt < 10)) {
@@ -352,7 +374,7 @@ inline void failsafe_shutdown( void ) {
 
 	delay(500); // give some time to remove current from AIRs
 
-	PIN_OFF(SHUTDOWN); // disable AIR
+	PIN_OFF(AMS_STATUS); // disable AIR (low is FAULT)
 
 	failsafe_warning(); // light up LED
 }
@@ -361,7 +383,7 @@ inline void failsafe_shutdown( void ) {
  * Light up warning light
  */
 inline void failsafe_warning( void ) {
-	LED_ON(AMS_LED);
+	LED_OFF(PWR_STDBY);
 }
 
 /*

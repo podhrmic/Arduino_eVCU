@@ -28,7 +28,7 @@
 #include "DeviceBMS.h"
 
 DeviceBMS::DeviceBMS() {
-	bus = &CAN2;//because we want CAN0 now
+	bus = &CAN;//because we want CAN0 now
 	can_init_rlecs();
 
 	max_cell_temp = 0;

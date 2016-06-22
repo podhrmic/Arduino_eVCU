@@ -29,9 +29,9 @@
 #define CONFIG_H_
 
 // Some defines for the compilation
-#define PRINT_DEBUG 0
-#define PRINT_DATA 1
-#define PRINT_STRING 1
+#define PRINT_DEBUG 1//0
+#define PRINT_DATA 0//1
+#define PRINT_STRING 0//1
 
 // Voltage defines
 #define MAX_CELL_VOLT (4.3/RLEC_CAN_VOLTAGE_MULT)
@@ -63,22 +63,36 @@
 /*
  * Digital outputs
  */
-// #define THROTTLE_OUT 4// DOUT0 - we are not using throttle output at the moment
-#define RTDS_PIN 5 // DOUT1 
-#define AMS_LED 6 // DOUT2
-#define FW_ENABLE 7 // DOUT3
-#define SHUTDOWN 2 // DOUT4
-#define IMD_LED 9 // DOUT7, PC21
+// >> RTDS- ->  DOUT0
+#define RTDS_PIN 4 // DOUT0
 
+// >> FW_ENABLE ->  DOUT1
+#define FW_ENABLE 5 // DOUT1
+
+// >> REGEN_DISABLE  ->  DOUT2
+#define REGEN_DISABLE 6 // DOUT2
+
+// >> NC -> DOUT3
+#define PIN_DOUT3 7// DOUT3
+
+// >> RMS_THROTTLE  ->  DOUT4
+#define RMS_THROTTLE 2 // DOUT4
+
+// >>  AMS_STATUS ->  DOUT5
+#define AMS_STATUS 3 // DOUT5
+
+// >> PWR_READY -> DOUT6
+#define PWR_READY 8 // DOUT6
+
+// >> PWR_STDBY  -> DOUT7
+#define PWR_STDBY 9 // DOUT7
+
+// Throttle input
 #define THROTTLE_IN_1 57 // PA22, Analog 3, AIN0
 #define THROTTLE_IN_2 56 // PA23, Analog 2, AIN1
-#define BATT_SENSE 55 // PA24, Analog 1, AIN2
 
-#define BRAKE_EN 49 // PC14, Digital Pin 49, DIN1
-#define IMD_STATUS 50 // PC13, DIN2
-
-// Legacy defines
-#define HLIM_PIN SHUTDOWN
+// >> CAN_BMS -> CAN0
+// >> CAN_RMS -> CAN1
 
 /*
  * Frequency defines [Hz]
